@@ -10,7 +10,7 @@ LNDIR=	/usr/bin/lndir
 #    OpenBSD Layout
 #<Layout OpenBSD>
 #    prefix:        /var/www
-#    exec_prefix:   /usr
+#    exec_prefix:   TRUEPREFIX
 #    bindir:        $exec_prefix/bin
 #    sbindir:       $exec_prefix/sbin
 #    libexecdir:    $exec_prefix/lib/apache/modules
@@ -28,15 +28,15 @@ LNDIR=	/usr/bin/lndir
 #    proxycachedir: $prefix/proxy
 #</Layout>
 
-HTTPD_PREFIX=		/var/www
-HTTPD_EXEC_PREFIX=	/usr
+HTTPD_EXEC_PREFIX=	TRUEPREFIX
 HTTPD_BINDIR=		${HTTPD_EXEC_PREFIX}/bin
 HTTPD_SBINDIR=		${HTTPD_EXEC_PREFIX}/sbin
 HTTPD_LIBEXECDIR=	${HTTPD_EXEC_PREFIX}/lib/apache/modules
 HTTPD_SYSCONFDIR=	${HTTPD_PREFIX}/conf
 HTTPD_ICONSDIR=		${HTTPD_PREFIX}/icons
 HTTPD_HTDOCSDIR=	${HTTPD_PREFIX}/htdocs
-HTTPD_MANUALDIR=	${HTTPD_EXEC_PREFIX}/share/doc/html/httpd
+HTTPD_MANUALDIR=	${HTTPD_EXEC_PREFIX}/share/apache-httpd-openbsd/doc/
+HTTPD_PREFIX=		${HTTPD_EXEC_PREFIX}/share/apache-httpd-openbsd/www
 HTTPD_INCLUDEDIR=	${HTTPD_EXEC_PREFIX}/lib/apache/include
 HTTPD_RUNDIR=		${HTTPD_PREFIX}/logs
 HTTPD_LOGDIR=		${HTTPD_PREFIX}/logs
@@ -228,12 +228,6 @@ MODCONFDIR= \
 
 CONFFILES= \
 	conf/httpd.conf conf/mime.types conf/magic
-
-HTDOCS= \
-	htdocs/apache_pb.gif htdocs/index.html htdocs/openbsdpower.gif \
-	htdocs/blowfish.jpg htdocs/bsd_small.gif htdocs/lock.gif \
-	htdocs/logo23.jpg htdocs/logo24.jpg htdocs/smalltitle.gif \
-	htdocs/openbsd_pb.gif htdocs/mod_ssl_sb.gif htdocs/openssl_ics.gif
 
 CGIFILES=	cgi-bin/printenv cgi-bin/test-cgi	
 
@@ -652,12 +646,14 @@ ${.OBJDIR}/config.layout: ${.CURDIR}/config.layout
 
 
 includes:
+	${INSTALL} -d -g ${BINGRP} -m 755 ${DESTDIR}${HTTPD_INCLUDEDIR}
 	@-for i in ${INCFILES}; do \
 		j=`basename $$i`; \
 		echo "Installing ${DESTDIR}${HTTPD_INCLUDEDIR}/$$j"; \
 		${INSTALL} ${INSTALL_COPY} -g ${BINGRP} -m 444 \
 		    ${.CURDIR}/$$i ${DESTDIR}${HTTPD_INCLUDEDIR}; \
 	done
+	${INSTALL} -d -g ${BINGRP} -m 755 ${DESTDIR}${HTTPD_INCLUDEDIR}/xml
 	@-for i in ${XMLFILES}; do \
 		j=`basename $$i`; \
 		echo "Installing ${DESTDIR}${HTTPD_INCLUDEDIR}/xml/$$j"; \
@@ -665,7 +661,7 @@ includes:
 		    ${.CURDIR}/$$i ${DESTDIR}${HTTPD_INCLUDEDIR}/xml; \
 	done
 
-install: maninstall htmlinstall
+install: maninstall htmlinstall distribution includes
 	@-for i in ${BINFILES}; do \
 		j=`basename $$i`; \
 		echo "Installing ${DESTDIR}${HTTPD_BINDIR}/$$j"; \
@@ -678,6 +674,7 @@ install: maninstall htmlinstall
 		${INSTALL} ${INSTALL_COPY} ${INSTALL_STRIP} -g ${BINGRP} \
 		    -m 555 ${.OBJDIR}/$$i ${DESTDIR}${HTTPD_SBINDIR}; \
 	done
+	${INSTALL} -d -g ${BINGRP} -m 755 ${DESTDIR}${HTTPD_LIBEXECDIR}
 	@-for i in ${INSTALL_MODULES}; do \
 		j=`basename $$i`; \
 		echo "Installing ${DESTDIR}${HTTPD_LIBEXECDIR}/$$j"; \
@@ -747,6 +744,7 @@ maninstall:
 htmlinstall:
 	@-for i in ${MANUALFILES}; do \
 		j=`dirname $$i | sed 's;^manual/*;;'`; \
+		${INSTALL} -d -g ${BINGRP} -m 755 ${DESTDIR}${HTTPD_MANUALDIR}/$$j/; \
 		k=`basename $$i`; \
 		echo "Installing ${DESTDIR}${HTTPD_MANUALDIR}/$$j/$$k"; \
 		${INSTALL} ${INSTALL_COPY} -g ${BINGRP} -m 444 \
@@ -760,24 +758,21 @@ distribution:
 	done
 	@-for i in ${CONFFILES}; do \
 		j=`dirname $$i`; \
-		echo "Installing ${DESTDIR}${HTTPD_PREFIX}/$$i"; \
-		${INSTALL} ${INSTALL_COPY} -g ${BINGRP} -m 444 \
-		    ${.OBJDIR}/$$i ${DESTDIR}${HTTPD_PREFIX}/$$j/; \
-	done
-	@-for i in ${HTDOCS}; do \
-		j=`dirname $$i`; \
+		${INSTALL} -d -g ${BINGRP} -m 755 ${DESTDIR}${HTTPD_PREFIX}/$$j/; \
 		echo "Installing ${DESTDIR}${HTTPD_PREFIX}/$$i"; \
 		${INSTALL} ${INSTALL_COPY} -g ${BINGRP} -m 444 \
 		    ${.OBJDIR}/$$i ${DESTDIR}${HTTPD_PREFIX}/$$j/; \
 	done
 	@-for i in ${CGIFILES}; do \
 		j=`dirname $$i`; \
+		${INSTALL} -d -g ${BINGRP} -m 755 ${DESTDIR}${HTTPD_PREFIX}/$$j/; \
 		echo "Installing ${DESTDIR}${HTTPD_PREFIX}/$$i"; \
 		${INSTALL} ${INSTALL_COPY} -g ${BINGRP} -m 000 \
 		    ${.OBJDIR}/$$i ${DESTDIR}${HTTPD_PREFIX}/$$j/; \
 	done
 	@-for i in ${ICONFILES}; do \
 		j=`dirname $$i`; \
+		${INSTALL} -d -g ${BINGRP} -m 755 ${DESTDIR}${HTTPD_PREFIX}/$$j; \
 		echo "Installing ${DESTDIR}${HTTPD_PREFIX}/$$i"; \
 		${INSTALL} ${INSTALL_COPY} -g ${BINGRP} -m 444 \
 		    ${.OBJDIR}/$$i ${DESTDIR}${HTTPD_PREFIX}/$$j/; \

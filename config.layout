@@ -265,7 +265,7 @@
 #   OpenBSD Layout
 <Layout OpenBSD>
     prefix:        /var/www
-    exec_prefix:   /usr
+    exec_prefix:   TRUEPREFIX
     bindir:        $exec_prefix/bin
     sbindir:       $exec_prefix/sbin
     libexecdir:    $exec_prefix/lib/apache/modules
@@ -303,4 +303,3 @@
     logfiledir:    $localstatedir/log/apache
     proxycachedir: $localstatedir/cache/apache
 </Layout>
-
