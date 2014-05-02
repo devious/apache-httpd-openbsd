@@ -116,15 +116,6 @@ int ssl_rand_seed(server_rec *s, pool *p, ssl_rsctx_t nCtx, char *prefix)
                 nDone += ssl_rand_feedfp(p, fp, pRandSeed->nBytes);
                 ssl_util_ppclose(s, p, fp);
             }
-            else if (pRandSeed->nSrc == SSL_RSSRC_EGD) {
-                /*
-                 * seed in contents provided by the external
-                 * Entropy Gathering Daemon (EGD)
-                 */
-                if ((n = RAND_egd_bytes(pRandSeed->cpPath, pRandSeed->nBytes)) == -1)
-                    continue;
-                nDone += n;
-            }
             else if (pRandSeed->nSrc == SSL_RSSRC_BUILTIN) {
                 /*
                  * seed in the current time (usually just 4 bytes)
